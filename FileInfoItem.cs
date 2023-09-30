@@ -42,6 +42,24 @@ namespace VideoCompressor
             }
         }
 
+        private TimeSpan remainingTime;
+
+        public string ExpectedTimeFormatted
+        {
+            get { return remainingTime.ToString(@"hh\:mm\:ss"); }
+        }
+
+        public TimeSpan RemainingTime
+        {
+            get { return remainingTime; }
+            set
+            {
+                remainingTime = value;
+                OnPropertyChanged(nameof(RemainingTime));
+                OnPropertyChanged(nameof(ExpectedTimeFormatted));
+            }
+        }
+
         public event PropertyChangedEventHandler PropertyChanged;
         protected void OnPropertyChanged(string propertyName)
         {

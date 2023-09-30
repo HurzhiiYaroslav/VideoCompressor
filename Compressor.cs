@@ -6,6 +6,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows;
+using System.Windows.Markup;
 using Xabe.FFmpeg;
 
 namespace VideoCompressor
@@ -55,7 +56,7 @@ namespace VideoCompressor
             }
             catch (Exception ex)
             {
-                //MessageBox.Show($"Compressing error: {ex.Message}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+                MessageBox.Show($"Compressing error: {ex.Message}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
             }
         }
 
@@ -110,9 +111,10 @@ namespace VideoCompressor
             conversion.OnProgress += async (sender, args) =>
             {
                 var progress = args.Percent;
+                var duration = args.Duration;
                 await mainWindow.Dispatcher.InvokeAsync(() =>
                 {
-                    mainWindow.UpdateProgressUI(Path.GetFileNameWithoutExtension(inputFilePath), progress);
+                    mainWindow.UpdateProgressUI(Path.GetFileNameWithoutExtension(inputFilePath), progress, duration);
                 }, System.Windows.Threading.DispatcherPriority.Normal);
             };
         }

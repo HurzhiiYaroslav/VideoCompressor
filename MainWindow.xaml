@@ -6,7 +6,7 @@
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto"/>
             <RowDefinition Height="Auto"/>
-            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto" MaxHeight="300"/>
             <RowDefinition Height="*"/>
             <RowDefinition Height="Auto"/>
             <RowDefinition Height="Auto"/>
@@ -37,6 +37,15 @@
                             </DataTemplate>
                         </GridViewColumn.CellTemplate>
                     </GridViewColumn>
+                    <GridViewColumn Header="Remaining time" Width="100" >
+                        <GridViewColumn.CellTemplate>
+                            <DataTemplate>
+                                <StackPanel>
+                                    <TextBlock Text="{Binding ExpectedTimeFormatted}" HorizontalAlignment="Center" VerticalAlignment="Center" />
+                                </StackPanel>
+                            </DataTemplate>
+                        </GridViewColumn.CellTemplate>
+                    </GridViewColumn>
                 </GridView>
             </ListView.View>
         </ListView>
@@ -59,9 +68,11 @@
                 </ComboBox>
                 <TextBlock Text="Bitrate:" FontSize="16" Margin="0,10,0,0"/>
                 <ComboBox x:Name="BitrateComboBox" Width="200">
-                    <ComboBoxItem Content="Low Bitrate" Tag="0.05"/>
-                    <ComboBoxItem Content="Medium Bitrate" Tag="0.10" IsSelected="True"/>
-                    <ComboBoxItem Content="High Bitrate" Tag="0.15"/>
+                    <ComboBoxItem Content="Very Low" Tag="0.05"/>
+                    <ComboBoxItem Content="Low" Tag="0.08"/>
+                    <ComboBoxItem Content="Normal" Tag="0.11" IsSelected="True"/>
+                    <ComboBoxItem Content="High" Tag="0.15"/>
+                    <ComboBoxItem Content="Very High" Tag="0.2"/>
                 </ComboBox>
             </StackPanel>
         </Border>

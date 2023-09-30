@@ -8,7 +8,6 @@ using System.Diagnostics;
 using System.Globalization;
 using System.IO;
 using System.Linq;
-using System.Threading;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
@@ -43,6 +42,8 @@ namespace VideoCompressor
 
         private void BrowseButton_Click(object sender, RoutedEventArgs e)
         {
+            selectedFiles.Clear();
+            SelectedFilesListView.Items.Clear();
             var openFileDialog = new OpenFileDialog
             {
                 Multiselect = true,
@@ -58,6 +59,7 @@ namespace VideoCompressor
                     SelectedFilesListView.Items.Add(new FileInfoItem
                     {
                         FileName = fileName,
+                        RemainingTime=TimeSpan.Zero,
                         CompressionProgress = 0
                     });
                 }
@@ -68,14 +70,9 @@ namespace VideoCompressor
         {
             try
             {
-                CompressButton.IsEnabled = false;
-                startTime = DateTime.Now;
-                timer.Start();
-                StopButton.IsEnabled = true;
-
                 if (selectedFiles.Count == 0)
                 {
-                    ShowErrorMessage("Выберите видеофайлы для компрессии.");
+                    ShowErrorMessage("Select the video files to be compressed");
                     CompressButton.IsEnabled = true;
                     StopButton.IsEnabled = false;
                     return;
@@ -84,16 +81,23 @@ namespace VideoCompressor
                 var selectedPath = GetFolderPathForSaving();
                 if (selectedPath != null)
                 {
+                    CompressButton.IsEnabled = false;
+                    startTime = DateTime.Now;
+                    timer.Start();
+                    StopButton.IsEnabled = true;
                     await CompressVideos(selectedPath);
                 }
 
-                StopButton.IsEnabled = false;
-                timer.Stop();
-                CompressButton.IsEnabled = true;
             }
             catch (Exception ex)
             {
-                HandleError($"Ошибка сжатия видео: {ex.Message}");
+                HandleError($"Video compression error: {ex.Message}");
+            }
+            finally
+            {
+                StopButton.IsEnabled = false;
+                timer.Stop();
+                CompressButton.IsEnabled = true;
             }
         }
 
@@ -102,7 +106,7 @@ namespace VideoCompressor
             var dialog = new CommonOpenFileDialog
             {
                 IsFolderPicker = true,
-                Title = "Выберите папку для сохранения файла"
+                Title = "Select a folder to save the file to"
             };
 
             return dialog.ShowDialog() == CommonFileDialogResult.Ok ? dialog.FileName : null;
@@ -120,7 +124,7 @@ namespace VideoCompressor
             StopButton.IsEnabled = false;
         }
 
-        internal void UpdateProgressUI(string fileName, double progress)
+        internal void UpdateProgressUI(string fileName, double progress, TimeSpan elapsed)
         {
             Application.Current.Dispatcher.Invoke(() =>
             {
@@ -129,6 +133,10 @@ namespace VideoCompressor
 
                 if (item != null)
                 {
+                    double elapsedSeconds = elapsed.TotalSeconds;
+                    double remainingTimeSeconds = (elapsedSeconds *100/progress)- elapsedSeconds;
+                    TimeSpan remainingTime = TimeSpan.FromSeconds(remainingTimeSeconds);
+                    item.RemainingTime = remainingTime;
                     item.CompressionProgress = progress;
                 }
             });
@@ -149,7 +157,7 @@ namespace VideoCompressor
                 BitrateComboBox.SelectedItem is ComboBoxItem bitrateItem && bitrateItem.Tag != null &&
                 float.TryParse(bitrateItem.Tag.ToString(), NumberStyles.Float, cultureInfo, out float bitrate))
             {
-                
+
                 return new Parameters
                 {
                     codec = codecItem.Tag.ToString(),
@@ -167,7 +175,7 @@ namespace VideoCompressor
                     bitrateOption = 0.1
                 };
             }
-            
+
         }
 
         private void StopCompression()
@@ -189,7 +197,7 @@ namespace VideoCompressor
 
         private void ShowErrorMessage(string message)
         {
-            MessageBox.Show(message, "Ошибка", MessageBoxButton.OK, MessageBoxImage.Error);
+            MessageBox.Show(message, "Error", MessageBoxButton.OK, MessageBoxImage.Error);
         }
 
         private void HandleError(string errorMessage)
